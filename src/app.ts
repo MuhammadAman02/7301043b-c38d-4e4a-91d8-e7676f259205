@@ -3,12 +3,20 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
+import cors from "@fastify/cors";
 import root from "./routes/root";
 import { documentRoutes } from "./routes/document.route";
 
 export async function createApp() {
   const app = Fastify({
     logger: true,
+  });
+
+  // Register CORS support
+  await app.register(cors, {
+    origin: true, // Allow all origins in development
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
   
   await app.register(fastifySwagger, {

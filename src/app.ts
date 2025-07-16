@@ -12,36 +12,39 @@ export async function createApp() {
   });
   
   await app.register(fastifySwagger, {
-      swagger: {
-        info: {
-          title: "Document Summarization API",
-          description: "API for uploading documents and generating AI-powered summaries",
-          version: "1.0.0",
-        },
+    swagger: {
+      info: {
+        title: "Document Summarization API",
+        description: "API for uploading documents and generating AI-powered summaries",
+        version: "1.0.0",
       },
-    });
+      consumes: ['multipart/form-data'],
+      produces: ['application/json'],
+    },
+  });
 
   await app.register(fastifySwaggerUi, {
-      routePrefix: "/docs",
-      uiConfig: {
-        docExpansion: "list",
-        deepLinking: true,
-      },
-      staticCSP: false,
-      transformSpecification: (swaggerObject, request, reply) => {
-        return swaggerObject;
-      },
-      transformSpecificationClone: true,
-    });
+    routePrefix: "/docs",
+    uiConfig: {
+      docExpansion: "list",
+      deepLinking: true,
+    },
+    staticCSP: false,
+    transformSpecification: (swaggerObject, request, reply) => {
+      return swaggerObject;
+    },
+    transformSpecificationClone: true,
+  });
     
   await app.register(helmet, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "blob:"],
         frameAncestors: ["*"],
+        connectSrc: ["'self'"],
       },
     },
   });
@@ -50,6 +53,7 @@ export async function createApp() {
   await app.register(multipart, {
     limits: {
       fileSize: 10 * 1024 * 1024, // 10MB limit
+      files: 1, // Only allow 1 file at a time
     },
   });
 
@@ -65,6 +69,12 @@ export async function createApp() {
       return reply.status(400).send({
         error: "Validation failed",
         details: error.validation,
+      });
+    }
+    
+    if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
+      return reply.status(413).send({
+        error: "File too large. Maximum size is 10MB."
       });
     }
     

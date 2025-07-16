@@ -50,14 +50,21 @@ export const processDocumentSchema = {
       file: {
         type: 'string',
         format: 'binary',
-        description: 'Document file (PDF, DOCX, or TXT)'
+        description: 'Upload a document file (PDF, DOCX, or TXT format, max 10MB)'
       }
     },
-    required: ['file']
+    required: ['file'],
+    additionalProperties: false
   },
   response: {
     201: zodToJsonSchema(ProcessDocumentResponseZod),
     400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    413: {
       type: 'object',
       properties: {
         error: { type: 'string' }

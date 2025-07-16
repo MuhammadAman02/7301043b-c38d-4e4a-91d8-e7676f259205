@@ -7,11 +7,16 @@ export async function uploadDocumentHandler(
   res: FastifyReply
 ) {
   try {
+    console.log('Upload request received');
+    
     const data = await req.file();
     
     if (!data) {
+      console.log('No file in request');
       throw new AppError('No file uploaded. Please select a file.', 400);
     }
+
+    console.log(`File received: ${data.filename}, type: ${data.mimetype}`);
 
     // Validate file type
     const allowedTypes = [
@@ -21,6 +26,7 @@ export async function uploadDocumentHandler(
     ];
 
     if (!allowedTypes.includes(data.mimetype)) {
+      console.log(`Unsupported file type: ${data.mimetype}`);
       throw new AppError(
         `Unsupported file type: ${data.mimetype}. Supported types: PDF, DOCX, TXT`,
         400
@@ -30,13 +36,18 @@ export async function uploadDocumentHandler(
     const buffer = await data.buffer();
     
     if (buffer.length === 0) {
+      console.log('Empty file uploaded');
       throw new AppError('Uploaded file is empty', 400);
     }
 
+    console.log(`Processing file: ${data.filename}, size: ${buffer.length} bytes`);
+    
     const result = await processDocument(data.filename, buffer, data.mimetype);
     
+    console.log('Document processed successfully');
     res.status(201).send(result);
   } catch (error) {
+    console.error('Upload error:', error);
     if (error instanceof AppError) {
       return res.status(error.statusCode).send({ error: error.message });
     }
@@ -52,6 +63,7 @@ export async function getSummariesHandler(
     const summaries = await getAllSummaries();
     res.status(200).send(summaries);
   } catch (error) {
+    console.error('Get summaries error:', error);
     if (error instanceof AppError) {
       return res.status(error.statusCode).send({ error: error.message });
     }
@@ -67,6 +79,7 @@ export async function getSummaryByIdHandler(
     const summary = await getSummaryById(req.params.id);
     res.status(200).send(summary);
   } catch (error) {
+    console.error('Get summary by ID error:', error);
     if (error instanceof AppError) {
       return res.status(error.statusCode).send({ error: error.message });
     }

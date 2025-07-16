@@ -29,6 +29,10 @@ export async function createApp() {
       },
       servers: [
         {
+          url: 'https://7301043b-c38d-4e4a-91d8-e7676f259205-app.joylo.dev',
+          description: 'Production server'
+        },
+        {
           url: 'http://localhost:3000',
           description: 'Development server'
         }

@@ -44,8 +44,31 @@ const GetSummaryByIdResponseZod = z.object({
 export const processDocumentSchema = {
   tags: ["Documents"],
   consumes: ['multipart/form-data'],
+  body: {
+    type: 'object',
+    properties: {
+      file: {
+        type: 'string',
+        format: 'binary',
+        description: 'Document file (PDF, DOCX, or TXT)'
+      }
+    },
+    required: ['file']
+  },
   response: {
     201: zodToJsonSchema(ProcessDocumentResponseZod),
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   },
 };
 

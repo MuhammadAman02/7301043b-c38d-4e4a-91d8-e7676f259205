@@ -2,8 +2,9 @@ import Fastify from "fastify";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import helmet from "@fastify/helmet";
+import multipart from "@fastify/multipart";
 import root from "./routes/root";
-
+import { documentRoutes } from "./routes/document.route";
 
 export async function createApp() {
   const app = Fastify({
@@ -13,8 +14,8 @@ export async function createApp() {
   await app.register(fastifySwagger, {
       swagger: {
         info: {
-          title: "Joylo API",
-          description: "Documentation for the Joylo backend services",
+          title: "Document Summarization API",
+          description: "API for uploading documents and generating AI-powered summaries",
           version: "1.0.0",
         },
       },
@@ -45,13 +46,28 @@ export async function createApp() {
     },
   });
 
+  // Register multipart support for file uploads
+  await app.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+  });
 
   // Register routes
   app.register(root, { prefix: "/" });
+  app.register(documentRoutes);
 
   // Global error handler
   app.setErrorHandler((error, request, reply) => {
     app.log.error(error);
+    
+    if (error.validation) {
+      return reply.status(400).send({
+        error: "Validation failed",
+        details: error.validation,
+      });
+    }
+    
     reply.status(500).send({ error: "Internal Server Error" });
   });
 

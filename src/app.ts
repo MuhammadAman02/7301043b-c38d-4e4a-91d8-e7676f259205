@@ -12,14 +12,19 @@ export async function createApp() {
   });
   
   await app.register(fastifySwagger, {
-    swagger: {
+    openapi: {
+      openapi: '3.0.0',
       info: {
         title: "Document Summarization API",
         description: "API for uploading documents and generating AI-powered summaries",
         version: "1.0.0",
       },
-      consumes: ['multipart/form-data'],
-      produces: ['application/json'],
+      servers: [
+        {
+          url: 'http://localhost:3000',
+          description: 'Development server'
+        }
+      ],
     },
   });
 
@@ -28,11 +33,9 @@ export async function createApp() {
     uiConfig: {
       docExpansion: "list",
       deepLinking: true,
+      tryItOutEnabled: true,
     },
     staticCSP: false,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject;
-    },
     transformSpecificationClone: true,
   });
     
@@ -40,11 +43,12 @@ export async function createApp() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:"],
         frameAncestors: ["*"],
         connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
       },
     },
   });

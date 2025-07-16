@@ -43,19 +43,8 @@ const GetSummaryByIdResponseZod = z.object({
 
 export const processDocumentSchema = {
   tags: ["Documents"],
+  description: "Upload a document and generate an AI summary",
   consumes: ['multipart/form-data'],
-  body: {
-    type: 'object',
-    properties: {
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'Upload a document file (PDF, DOCX, or TXT format, max 10MB)'
-      }
-    },
-    required: ['file'],
-    additionalProperties: false
-  },
   response: {
     201: zodToJsonSchema(ProcessDocumentResponseZod),
     400: {

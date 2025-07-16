@@ -10,10 +10,29 @@ export async function uploadDocumentHandler(
     const data = await req.file();
     
     if (!data) {
-      throw new AppError('No file uploaded', 400);
+      throw new AppError('No file uploaded. Please select a file.', 400);
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+
+    if (!allowedTypes.includes(data.mimetype)) {
+      throw new AppError(
+        `Unsupported file type: ${data.mimetype}. Supported types: PDF, DOCX, TXT`,
+        400
+      );
     }
 
     const buffer = await data.buffer();
+    
+    if (buffer.length === 0) {
+      throw new AppError('Uploaded file is empty', 400);
+    }
+
     const result = await processDocument(data.filename, buffer, data.mimetype);
     
     res.status(201).send(result);

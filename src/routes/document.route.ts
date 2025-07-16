@@ -8,6 +8,17 @@ export async function documentRoutes(app: FastifyInstance) {
       tags: ["Documents"],
       description: "Upload a document file (PDF, DOCX, or TXT) and generate an AI summary",
       consumes: ['multipart/form-data'],
+      body: {
+        type: 'object',
+        properties: {
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'Document file (PDF, DOCX, or TXT format, max 10MB)'
+          }
+        },
+        required: ['file']
+      },
       response: {
         201: {
           type: 'object',

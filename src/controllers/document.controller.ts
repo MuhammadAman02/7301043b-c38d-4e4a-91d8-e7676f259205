@@ -8,6 +8,7 @@ export async function uploadDocumentHandler(
 ) {
   try {
     console.log('Upload request received');
+    console.log('Request headers:', req.headers);
     
     const data = await req.file();
     
@@ -16,7 +17,7 @@ export async function uploadDocumentHandler(
       throw new AppError('No file uploaded. Please select a file.', 400);
     }
 
-    console.log(`File received: ${data.filename}, type: ${data.mimetype}`);
+    console.log(`File received: ${data.filename}, type: ${data.mimetype}, size: ${data.file.bytesRead || 'unknown'}`);
 
     // Validate file type
     const allowedTypes = [

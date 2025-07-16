@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server-project_id
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-server-project_id
+  template:
+    metadata:
+      labels:
+        app: code-server-project_id
+    spec:
+      serviceAccountName: hst-ai-service-account
+      containers:
+      - name: code-server
+        image: mohammadaman/fastify-api:latest  
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: code-server
+        - containerPort: 3000
+          name: node-app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: project-volume
+          mountPath: /home/coder/workspace/code-space
+        env:
+        - name: PASSWORD
+          value: "123456"
+        - name: DOCKER_USER
+          value: "coder-dev"
+        - name: DEFAULT_WORKSPACE
+          value: "/home/coder/workspace/code-space"
+      volumes:
+      - name: project-volume
+        hostPath:
+          path: /home/generated_projects/project_id
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-server-project_id
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: code-server
+  - port: 3000
+    targetPort: 3000
+    name: node-app
+  selector:
+    app: code-server-project_id
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: code-server-project_id
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Host $host;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: project_id-code.app_name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: code-server-project_id
+            port:
+              number: 8080
+  - host: project_id-app.app_name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: code-server-project_id
+            port:
+              number: 3000
